@@ -2,21 +2,23 @@
 
 Shared development infrastructure for Sun repositories. The first template shares
 devcontainer configuration while each project keeps its Dockerfile, dependencies,
-build commands, and release policy.
+build commands, and release policy. All infrastructure targets Ubuntu 26.04;
+CI and publishing use the explicit `ubuntu-26.04` runner label.
 
 ## Sun with an existing Dockerfile
 
 Source: [`src/sun-existing-dockerfile`](src/sun-existing-dockerfile).
 After publishing, the template reference is:
-`ghcr.io/namo-robotics/sun_infra/sun-existing-dockerfile:0.1.0`.
+`ghcr.io/namo-robotics/sun_infra/sun-existing-dockerfile:0.1.1`.
 
 The template supplies the Ubuntu development user, UID matching, an isolated
 persistent ccache volume, cache ownership setup, Sun/C++ editor extensions, and
 formatter settings. It does not install Sun: the project's image must provide
 the compiler, language server, and required native dependencies.
 
-The Dockerfile must provide an `ubuntu` user with home `/home/ubuntu`, Bash, and
-passwordless sudo. The existing Dockerfiles in `sun_gobject`, `sun_ui`,
+The Dockerfile must use Ubuntu 26.04 and provide an `ubuntu` user with home `/home/ubuntu`, Bash, and
+passwordless sudo. Startup checks the OS version before configuring the cache.
+The existing Dockerfiles in `sun_gobject`, `sun_ui`,
 `sun_accent_popup`, and `sun_video_editor` meet that user/setup contract.
 The default build context is the project root and Dockerfile is `../Dockerfile`
 relative to `.devcontainer`. Both paths and the display name are template options.
@@ -29,7 +31,7 @@ For a project without an existing `.devcontainer` directory, run from its root:
 ```sh
 ./tmp/cli/node_modules/.bin/devcontainer templates apply \
   --workspace-folder . \
-  --template-id ghcr.io/namo-robotics/sun_infra/sun-existing-dockerfile:0.1.0 \
+  --template-id ghcr.io/namo-robotics/sun_infra/sun-existing-dockerfile:0.1.1 \
   --template-args '{"name":"Sun Project"}'
 ```
 
@@ -64,7 +66,7 @@ tmp/cli/node_modules/.bin/devcontainer exec --workspace-folder build/smoke bash 
 ```
 
 The fixture verifies the user, cache mount permissions, and startup hook using a
-minimal Ubuntu image. It does not build or test the Sun compiler or GTK libraries.
+minimal Ubuntu 26.04 image. It does not build or test the Sun compiler or GTK libraries.
 Remove the test container after use with `docker rm -f <container-id>` using the
 ID reported by `devcontainer up`; remove its test cache volume when no longer needed.
 

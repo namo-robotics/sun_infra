@@ -9,6 +9,7 @@ temporary files in `tmp/`; both directories are ignored.
   `devcontainer read-configuration --workspace-folder build/smoke > build/configuration.json`.
 - Run the container smoke test using the commands in README.md.
 - Bump the template metadata version when changing published template files.
+- Use Ubuntu 26.04 for container bases and GitHub Actions runners.
 - Preserve project-specific Dockerfiles, build scripts, and release policies.
 - Do not automatically update compilers or import repositories during startup.
 - Limit parallel builds and tests to at most half the available cores, minimum one.
