@@ -1,0 +1,27 @@
+{
+  "id": "sun-existing-dockerfile",
+  "version": "0.1.0",
+  "name": "Sun (existing Dockerfile)",
+  "description": "Common editor, user, and cache configuration for Sun projects with an Ubuntu development Dockerfile.",
+  "documentationURL": "https://github.com/namo-robotics/sun_infra#readme",
+  "publisher": "namo-robotics",
+  "platforms": ["Sun", "C++", "Ubuntu"],
+  "keywords": ["sun", "llvm", "cmake"],
+  "options": {
+    "name": {
+      "type": "string",
+      "description": "Development container display name",
+      "default": "Sun Development"
+    },
+    "dockerfile": {
+      "type": "string",
+      "description": "Path to the project's Dockerfile, relative to .devcontainer",
+      "default": "../Dockerfile"
+    },
+    "context": {
+      "type": "string",
+      "description": "Docker build context, relative to .devcontainer",
+      "default": ".."
+    }
+  }
+}
