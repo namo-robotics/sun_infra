@@ -1,0 +1,29 @@
+name: Validate templates
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Dev Container CLI
+        run: npm install --prefix tmp/cli @devcontainers/cli@0.80.2
+      - name: Prepare template and check shell scripts
+        run: |
+          python3 scripts/prepare-smoke-test.py
+          bash -n src/sun-existing-dockerfile/.devcontainer/post-create.sh test/smoke.sh
+      - name: Validate rendered configuration
+        run: tmp/cli/node_modules/.bin/devcontainer read-configuration --workspace-folder build/smoke > build/configuration.json
+      - name: Start template fixture
+        run: tmp/cli/node_modules/.bin/devcontainer up --workspace-folder build/smoke
+      - name: Verify container setup
+        run: tmp/cli/node_modules/.bin/devcontainer exec --workspace-folder build/smoke bash smoke.sh
