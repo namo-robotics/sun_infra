@@ -1,0 +1,40 @@
+{
+  "name": "${templateOption:name}",
+  "build": {
+    "context": "${templateOption:context}",
+    "dockerfile": "${templateOption:dockerfile}"
+  },
+  "containerUser": "ubuntu",
+  "remoteUser": "ubuntu",
+  "updateRemoteUserUID": true,
+  "mounts": [
+    "source=sun-${devcontainerId}-ccache,target=/home/ubuntu/.cache/ccache,type=volume"
+  ],
+  "containerEnv": {
+    "CCACHE_DIR": "/home/ubuntu/.cache/ccache",
+    "CCACHE_MAXSIZE": "10G"
+  },
+  "postCreateCommand": {
+    "sun-cache": "bash .devcontainer/post-create.sh"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "namo-robotics.sun-language",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "llvm-vs-code-extensions.lldb-dap",
+        "ms-vscode.cmake-tools"
+      ],
+      "settings": {
+        "cmake.configureOnOpen": false,
+        "[sun]": {
+          "editor.defaultFormatter": "namo-robotics.sun-language",
+          "editor.formatOnSave": true
+        },
+        "[cpp]": {
+          "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+        }
+      }
+    }
+  }
+}
