@@ -20,7 +20,7 @@ jobs:
       - name: Prepare template and check shell scripts
         run: |
           python3 scripts/prepare-smoke-test.py
-          bash -n src/sun-existing-dockerfile/.devcontainer/post-create.sh test/smoke.sh
+          bash -n src/sun-dev/.devcontainer/post-create.sh test/smoke.sh
       - name: Validate rendered configuration
         run: tmp/cli/node_modules/.bin/devcontainer read-configuration --workspace-folder build/smoke > build/configuration.json
       - name: Start template fixture

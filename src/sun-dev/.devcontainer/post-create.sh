@@ -11,4 +11,4 @@ fi
 
 cache_dir="${CCACHE_DIR:-$HOME/.cache/ccache}"
 sudo chown -R "$(id -u):$(id -g)" "$cache_dir"
-mkdir -p "$HOME/.config/dconf"
+sudo install -d -o "$(id -u)" -g "$(id -g)" "$HOME/.config/dconf"

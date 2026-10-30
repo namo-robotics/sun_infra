@@ -10,7 +10,7 @@ import shutil
 def main():
     """Validate option references and prepare only disposable build artifacts."""
     root = Path(__file__).resolve().parent.parent
-    source = root / "src/sun-existing-dockerfile"
+    source = root / "src/sun-dev"
     metadata = json.loads((source / "devcontainer-template.json").read_text())
     assert metadata["id"] == source.name
     assert re.fullmatch(r"\d+\.\d+\.\d+", metadata["version"])
@@ -33,7 +33,18 @@ def main():
         output.write_text(contents)
     assert used == set(options), "Every declared option must be used"
     config = json.loads((destination / ".devcontainer/devcontainer.json").read_text())
-    assert config["remoteUser"] == "ubuntu"
+    assert "remoteUser" not in config and "containerUser" not in config
+    # Exercise host mounts using disposable directories instead of real credentials.
+    host_home = root / "build/smoke-host-home"
+    for directory in [".codex", ".claude", ".ssh", ".config/gh"]:
+        (host_home / directory).mkdir(parents=True, exist_ok=True)
+    config["mounts"] = [
+        mount.replace("${localEnv:HOME}", str(host_home))
+        for mount in config["mounts"]
+    ]
+    (destination / ".devcontainer/devcontainer.json").write_text(
+        json.dumps(config, indent=2) + "\n"
+    )
     shutil.copyfile(root / "test/Dockerfile", destination / "Dockerfile")
     shutil.copyfile(root / "test/smoke.sh", destination / "smoke.sh")
     print(f"Prepared {destination}")

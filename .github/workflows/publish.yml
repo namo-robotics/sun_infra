@@ -21,7 +21,7 @@ jobs:
       - name: Validate template before publishing
         run: |
           python3 scripts/prepare-smoke-test.py
-          bash -n src/sun-existing-dockerfile/.devcontainer/post-create.sh test/smoke.sh
+          bash -n src/sun-dev/.devcontainer/post-create.sh test/smoke.sh
           tmp/cli/node_modules/.bin/devcontainer read-configuration --workspace-folder build/smoke > build/configuration.json
           tmp/cli/node_modules/.bin/devcontainer up --workspace-folder build/smoke
           tmp/cli/node_modules/.bin/devcontainer exec --workspace-folder build/smoke bash smoke.sh

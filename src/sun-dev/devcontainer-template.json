@@ -1,7 +1,7 @@
 {
-  "id": "sun-existing-dockerfile",
-  "version": "0.1.1",
-  "name": "Sun (existing Dockerfile)",
+  "id": "sun-dev",
+  "version": "0.1.2",
+  "name": "Sun Development",
   "description": "Common editor, user, and cache configuration for Sun projects with an Ubuntu 26.04 development Dockerfile.",
   "documentationURL": "https://github.com/namo-robotics/sun_infra#readme",
   "publisher": "namo-robotics",

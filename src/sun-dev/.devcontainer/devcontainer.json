@@ -4,11 +4,13 @@
     "context": "${templateOption:context}",
     "dockerfile": "${templateOption:dockerfile}"
   },
-  "containerUser": "ubuntu",
-  "remoteUser": "ubuntu",
   "updateRemoteUserUID": true,
   "mounts": [
-    "source=sun-${devcontainerId}-ccache,target=/home/ubuntu/.cache/ccache,type=volume"
+    "source=sun-${devcontainerId}-ccache,target=/home/ubuntu/.cache/ccache,type=volume",
+    "source=${localEnv:HOME}/.codex,target=/home/ubuntu/.codex,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.claude,target=/home/ubuntu/.claude,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.ssh,target=/home/ubuntu/.ssh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.config/gh,target=/home/ubuntu/.config/gh,type=bind,consistency=cached"
   ],
   "containerEnv": {
     "CCACHE_DIR": "/home/ubuntu/.cache/ccache",
