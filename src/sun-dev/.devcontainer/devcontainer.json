@@ -25,7 +25,9 @@
         "namo-robotics.sun-language",
         "llvm-vs-code-extensions.vscode-clangd",
         "llvm-vs-code-extensions.lldb-dap",
-        "ms-vscode.cmake-tools"
+        "ms-vscode.cmake-tools",
+        "Anthropic.claude-code",
+        "openai.chatgpt"
       ],
       "settings": {
         "cmake.configureOnOpen": false,

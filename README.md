@@ -56,7 +56,8 @@ Before opening the container, create missing directories on the host:
 mkdir -p ~/.codex ~/.claude ~/.ssh ~/.config/gh
 ```
 
-Personal assistant extensions remain local choices.
+The common extensions include Sun Language, clangd, LLDB DAP, CMake Tools,
+Claude Code, and ChatGPT.
 Compiler updates stay explicit; startup does not download a new mutable `dev`
 release. The template does not set fixed build/test worker counts. Project build
 scripts should choose at most half the available cores, with a minimum of one.
