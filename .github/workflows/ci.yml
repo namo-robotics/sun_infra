@@ -1,13 +1,53 @@
-name: Validate templates
+name: CI
+
 on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
+    inputs:
+      refresh_image:
+        description: Rebuild and publish the development image without cached layers
+        type: boolean
+        default: false
+      publish_templates:
+        description: Publish versioned templates after validation
+        type: boolean
+        default: false
+
 permissions:
   contents: read
+
+concurrency:
+  # Keep a merged PR in its own group rather than cancelling main's publication.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  changes:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      image: ${{ inputs.refresh_image || steps.filter.outputs.image == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v4
+        id: filter
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          base: main
+          filters: |
+            image:
+              - 'images/dev/**'
+              - 'test/dev-image.sh'
+              - '.github/workflows/ci.yml'
+
   validate:
+    needs: changes
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
@@ -27,3 +67,83 @@ jobs:
         run: tmp/cli/node_modules/.bin/devcontainer up --workspace-folder build/smoke
       - name: Verify container setup
         run: tmp/cli/node_modules/.bin/devcontainer exec --workspace-folder build/smoke bash smoke.sh
+
+  image:
+    needs: changes
+    if: needs.changes.outputs.image == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Select image tags
+        id: tags
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          image="ghcr.io/${OWNER,,}/sun-dev"
+          echo "rolling=$image:ubuntu26.04-llvm20" >> "$GITHUB_OUTPUT"
+          echo "commit=$image:sha-$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Build image for testing
+        uses: docker/build-push-action@v7
+        with:
+          context: images/dev
+          platforms: linux/amd64
+          pull: true
+          no-cache: ${{ github.event_name == 'workflow_dispatch' }}
+          load: true
+          tags: sun-dev:test
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=sun-dev
+          cache-to: type=gha,mode=max,scope=sun-dev
+
+      - name: Smoke-test development tools
+        run: |
+          bash -n test/dev-image.sh
+          docker run --rm -i sun-dev:test bash < test/dev-image.sh
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish tested image
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          ROLLING_TAG: ${{ steps.tags.outputs.rolling }}
+          COMMIT_TAG: ${{ steps.tags.outputs.commit }}
+        run: |
+          docker tag sun-dev:test "$ROLLING_TAG"
+          docker tag sun-dev:test "$COMMIT_TAG"
+          docker push "$COMMIT_TAG"
+          docker push "$ROLLING_TAG"
+
+  publish:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_templates && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish versioned templates to GHCR
+        uses: devcontainers/action@v1
+        with:
+          publish-templates: 'true'
+          base-path-to-templates: './src'
+          generate-docs: 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

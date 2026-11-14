@@ -21,8 +21,9 @@ USER ubuntu
 WORKDIR /workspaces/my-project
 ```
 
-[Image CI](.github/workflows/dev-image.yml) tests pull requests and publishes
-on `main`. Manual runs refresh packages without cached layers. Tags are
+[CI](.github/workflows/ci.yml) tests pull requests and publishes
+on `main` when image files change. To refresh packages without cached layers,
+run **CI** on `main` with **refresh_image** enabled. Tags are
 `ubuntu26.04-llvm20` and `sha-<commit>`; pin a digest for reproducible builds.
 Make the GHCR package public after its first publication.
 
@@ -53,5 +54,6 @@ The template mounts those host directories read-write. For an existing
 
 See [template CI](.github/workflows/ci.yml) for validation commands.
 To publish, bump [the template version](src/sun-dev/devcontainer-template.json)
-and run **Publish templates** on `main`. Make its GHCR package public after the
-first publication. Template updates must be applied to each project explicitly.
+and run **CI** on `main` with **publish_templates** enabled. Publishing waits
+for template validation to pass. Make its GHCR package public after the first
+publication. Template updates must be applied to each project explicitly.
