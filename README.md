@@ -5,6 +5,9 @@ Shared development image and devcontainer template for Sun projects.
 ## Development image
 
 Ubuntu 26.04, Linux amd64, LLVM/Clang 20, and common build tools.
+Includes the complete `x86_64-linux-musl` toolchain from musl.cc for Sun's default
+static linkage, including the C++ runtime. It is installed under `/opt/cross`
+with its `bin` directory on `PATH`.
 Includes the `ubuntu` user and passwordless sudo. Projects install Sun and
 their own GTK, media, and other application dependencies.
 

@@ -8,7 +8,8 @@ test "$(id -un)" = ubuntu
 test "$(sudo -n id -u)" = 0
 
 for tool in clang clang++ clangd clang-format-20 lldb-20 ld.lld-20 llvm-config-20 \
-    cmake ninja git ssh curl python3 pkg-config protoc ccache gdb; do
+    cmake ninja git ssh curl python3 pkg-config protoc ccache gdb \
+    x86_64-linux-musl-gcc x86_64-linux-musl-g++ x86_64-linux-musl-readelf; do
     command -v "$tool" >/dev/null
 done
 
@@ -34,5 +35,15 @@ CPP
 
 clang++ "$scratch/main.cpp" -o "$scratch/check"
 test "$("$scratch/check")" = 'toolchain ready'
+
+# Exercise the musl C++ runtime and verify that no dynamic loader or libraries are needed.
+x86_64-linux-musl-g++ -static "$scratch/main.cpp" -o "$scratch/static-check"
+test "$("$scratch/static-check")" = 'toolchain ready'
+x86_64-linux-musl-readelf -l "$scratch/static-check" > "$scratch/program-headers"
+x86_64-linux-musl-readelf -d "$scratch/static-check" > "$scratch/dynamic-section"
+if grep -q INTERP "$scratch/program-headers" || grep -q NEEDED "$scratch/dynamic-section"; then
+    echo 'The musl test binary requires dynamic linking.' >&2
+    exit 1
+fi
 
 printf '%s\n' 'Shared development image smoke test passed.'

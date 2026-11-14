@@ -40,6 +40,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
+# Install the complete static-link toolchain, including the musl C++ runtime.
+RUN mkdir -p /opt/cross \
+    && curl --fail --location --retry 3 https://musl.cc/x86_64-linux-musl-cross.tgz \
+       -o /tmp/x86_64-linux-musl-cross.tgz \
+    && tar -xzf /tmp/x86_64-linux-musl-cross.tgz -C /opt/cross --no-same-owner \
+    && rm /tmp/x86_64-linux-musl-cross.tgz \
+    && /opt/cross/x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc --version
+ENV PATH="/opt/cross/x86_64-linux-musl-cross/bin:${PATH}"
+
 # Select the shared Clang toolchain and configure the development user.
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 100 \
     && update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 100 \
