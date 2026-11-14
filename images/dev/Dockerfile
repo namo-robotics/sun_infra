@@ -40,10 +40,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install the complete static-link toolchain, including the musl C++ runtime.
+# Use a pinned GitHub mirror because musl.cc can time out on hosted runners.
+# Verify the archive before installing the compiler and its musl C++ runtime.
 RUN mkdir -p /opt/cross \
-    && curl --fail --location --retry 3 https://musl.cc/x86_64-linux-musl-cross.tgz \
+    && curl --fail --location --retry 3 --connect-timeout 20 --max-time 300 \
+       https://github.com/musl-cc/musl.cc/releases/download/v0.0.1/x86_64-linux-musl-cross.tgz \
        -o /tmp/x86_64-linux-musl-cross.tgz \
+    && echo 'c5d410d9f82a4f24c549fe5d24f988f85b2679b452413a9f7e5f7b956f2fe7ea  /tmp/x86_64-linux-musl-cross.tgz' | sha256sum -c - \
     && tar -xzf /tmp/x86_64-linux-musl-cross.tgz -C /opt/cross --no-same-owner \
     && rm /tmp/x86_64-linux-musl-cross.tgz \
     && /opt/cross/x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc --version
